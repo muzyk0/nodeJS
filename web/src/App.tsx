@@ -1,26 +1,54 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import axios, { AxiosResponse } from "axios";
+import React, { useEffect } from "react";
+import "./App.css";
+
+const instance = axios.create({
+    baseURL: "http://localhost:3001/",
+});
+
+const api = {
+    getUser(): Promise<AxiosResponse<Users[]>> {
+        return instance.get<Users[]>("users");
+    },
+    createUser(): Promise<AxiosResponse<Users[]>> {
+        return instance.post<Users[]>("users");
+    },
+};
+
+interface Users {
+    id: number;
+    name: string;
+}
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const [users, setUsers] = React.useState<Users[]>([]);
+
+    const getUsers = () => {
+        api.getUser().then((res) => {
+            setUsers(res.data);
+        });
+    };
+
+    useEffect(() => {
+        getUsers();
+    }, []);
+
+    const createUser = () => {
+        api.createUser().then((res) => {
+            getUsers();
+        });
+    };
+
+    return (
+        <div>
+            <div>
+                <button onClick={createUser}>Create User</button>
+            </div>
+            {users.map((u) => (
+                <div>{u.name}</div>
+            ))}
+        </div>
+    );
 }
 
 export default App;
