@@ -10,8 +10,8 @@ const api = {
     getUser(): Promise<AxiosResponse<Users[]>> {
         return instance.get<Users[]>("users");
     },
-    createUser(): Promise<AxiosResponse<Users[]>> {
-        return instance.post<Users[]>("users");
+    createUser(name: string): Promise<AxiosResponse<Users[]>> {
+        return instance.post<Users[]>("users", { name });
     },
 };
 
@@ -22,6 +22,7 @@ interface Users {
 
 function App() {
     const [users, setUsers] = React.useState<Users[]>([]);
+    const userName = React.useRef<HTMLInputElement>(null);
 
     const getUsers = () => {
         api.getUser().then((res) => {
@@ -34,13 +35,16 @@ function App() {
     }, []);
 
     const createUser = () => {
-        api.createUser().then((res) => {
-            getUsers();
-        });
+        if (userName.current) {
+            api.createUser(userName.current.value).then((res) => {
+                getUsers();
+            });
+        }
     };
 
     return (
         <div>
+            <input type="text" ref={userName} />
             <div>
                 <button onClick={createUser}>Create User</button>
             </div>

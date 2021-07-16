@@ -1,6 +1,11 @@
 const http = require("http");
 const { addUser, getUsers } = require("./repository");
+const { usersController } = require("./usersController");
 const port = 3001;
+
+process.on("unhandledRejection", (reason, p) => {
+    console.log(reason, p);
+});
 
 const cors = (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -15,22 +20,12 @@ const cors = (req, res) => {
     return false;
 };
 
-const users = [
-    { id: 1, name: "Sasha" },
-    { id: 2, name: "Viktor" },
-];
-
 const server = http.createServer((req, res) => {
     if (cors(req, res)) return;
 
     switch (req.url) {
         case "/users":
-            if (req.method === "POST") {
-                addUser("Lesha");
-                res.write(JSON.stringify({ success: true }));
-            } else {
-                res.write(JSON.stringify(getUsers()));
-            }
+            usersController(req, res);
             break;
         case "/404":
             res.write("Page not found");
@@ -39,8 +34,6 @@ const server = http.createServer((req, res) => {
             res.write("");
             break;
     }
-
-    res.end();
 });
 
 server.listen(port);
