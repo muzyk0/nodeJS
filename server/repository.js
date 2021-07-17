@@ -8,9 +8,12 @@ const getUsers = () => {
 };
 const addUser = async (name) => {
     let users = await getUsers();
-    users.push({ name });
-
-    writeJsonToFile("users.json", users);
+    users.push({ name, id: users[users.length - 1].id + 1 });
+    try {
+        await writeJsonToFile("users.json", users);
+    } catch (e) {
+        throw new Error(e);
+    }
 };
 
 exports.addUser = addUser;

@@ -1,40 +1,34 @@
-const http = require("http");
-const { addUser, getUsers } = require("./repository");
-const { usersController } = require("./usersController");
-const port = 3001;
+const express = require("express");
+const cors = require("cors");
+const app = express();
+const router = require("./users-router");
+
+const PORT = 3001;
+
+app.use(cors());
+
+app.use(express.json());
+app.use(
+    express.urlencoded({
+        extended: true,
+    })
+);
+
+app.use("/users", router);
+
+app.get("/tasks", async (req, res) => {
+    res.send("tasks");
+});
+
+app.use((req, res) => {
+    res.status(404);
+    res.send({ value: "Not found!" });
+});
+
+app.listen(PORT, () => {
+    console.log(`Server started in port ${PORT}`);
+});
 
 process.on("unhandledRejection", (reason, p) => {
     console.log(reason, p);
 });
-
-const cors = (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Request-Method", "*");
-    res.setHeader("Access-Control-Allow-Methods", "OPTIONS, GET");
-    res.setHeader("Access-Control-Allow-Headers", "*");
-    if (req.method === "OPTIONS") {
-        res.writeHead(200);
-        res.end();
-        return true;
-    }
-    return false;
-};
-
-const server = http.createServer((req, res) => {
-    if (cors(req, res)) return;
-
-    switch (req.url) {
-        case "/users":
-            usersController(req, res);
-            break;
-        case "/404":
-            res.write("Page not found");
-            break;
-        default:
-            res.write("");
-            break;
-    }
-});
-
-server.listen(port);
-console.log(`Server started in port ${port}`);
