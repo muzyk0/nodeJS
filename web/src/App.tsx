@@ -8,15 +8,21 @@ const instance = axios.create({
 
 const api = {
     getUser(): Promise<AxiosResponse<Users[]>> {
-        return instance.get<Users[]>("users");
+        return instance.get<Users[]>(`users${window.location.search}`);
     },
     createUser(name: string): Promise<AxiosResponse<Users[]>> {
         return instance.post<Users[]>("users", { name });
     },
+    updateUser(id: string, name: string): Promise<AxiosResponse<Users[]>> {
+        return instance.put<Users[]>("users", { id, name });
+    },
+    deleteUser(id: string): Promise<AxiosResponse<Users[]>> {
+        return instance.delete<Users[]>(`users/${id}`);
+    },
 };
 
 interface Users {
-    id: number;
+    _id: string;
     name: string;
 }
 
@@ -41,6 +47,16 @@ function App() {
             });
         }
     };
+    const deleteUser = (id: string) => {
+        api.deleteUser(id).then((res) => {
+            getUsers();
+        });
+    };
+    const updateUser = (id: string, name: string) => {
+        api.updateUser(id, name).then((res) => {
+            getUsers();
+        });
+    };
 
     return (
         <div>
@@ -49,7 +65,21 @@ function App() {
                 <button onClick={createUser}>Create User</button>
             </div>
             {users.map((u) => (
-                <div>{u.name}</div>
+                <div>
+                    <input
+                        defaultValue={u.name}
+                        onBlur={(e) => {
+                            updateUser(u._id, e.currentTarget.value);
+                        }}
+                    />
+                    <button
+                        onClick={() => {
+                            deleteUser(u._id);
+                        }}
+                    >
+                        X
+                    </button>
+                </div>
             ))}
         </div>
     );

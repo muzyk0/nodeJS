@@ -1,4 +1,10 @@
-const { getUsers, addUser } = require("./repository");
+const {
+    getUsers,
+    getUser,
+    addUser,
+    deleteUser,
+    updateUser,
+} = require("./repository");
 
 const express = require("express");
 const router = express.Router();
@@ -9,22 +15,25 @@ router.use((req, res, next) => {
 });
 
 router.get("/", async (req, res) => {
-    let users = await getUsers();
+    if (!!req.query.search) {
+        const search = req.query.search;
 
-    const search = req.query.search.toLowerCase();
+        let users = await getUsers(search);
 
-    if (!!search) {
-        users = users.filter((u) => u.name.toLowerCase().indexOf(search) > -1);
+        res.send(users);
+        return;
     }
+
+    let users = await getUsers();
 
     res.send(users);
 });
 
 router.get("/:id", async (req, res) => {
-    const userId = parseInt(req.params.id);
+    const userId = req.params.id;
 
-    const users = await getUsers();
-    const user = users.find((u) => u.id === userId);
+    const user = await getUser(userId);
+
     if (user) {
         res.send(user);
     } else {
@@ -35,8 +44,28 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
     const name = req.body.name;
-    const result = await addUser(name);
+    await addUser(name);
     res.send({ success: true });
+});
+
+router.put("/", async (req, res) => {
+    const userId = req.body.id;
+    const name = req.body.name;
+
+    await updateUser(userId, name);
+    res.send({ success: true });
+});
+
+router.delete("/:id", async (req, res) => {
+    const userId = req.params.id;
+    const result = await deleteUser(userId);
+    if (result.n) {
+        res.send({ success: true, result });
+        res.status(204);
+    } else {
+        res.status(404);
+        res.send({ success: false, result });
+    }
 });
 
 module.exports = router;
